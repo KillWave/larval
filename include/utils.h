@@ -4,7 +4,6 @@
 #include "common.h"
 #include "vm.h"
 #include "parser.h"
-
 void *memManager(VM *vm, void *ptr, uint32_t oldSize, uint32_t newSize);
 
 #define ALLOCATE(vmPtr, type) \
