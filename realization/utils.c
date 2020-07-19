@@ -67,7 +67,6 @@ void errorReport(void *parser,
         break;
     case ERROR_LEX:
     case ERROR_COMPILE:
-        ASSERT(parser != NULL, "parser is null!");
         fprintf(stderr, "%s:%d \"%s\"\n", ((Parser *)parser)->file,
                 ((Parser *)parser)->preToken.lineNo, buffer);
         break;

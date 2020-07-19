@@ -68,7 +68,7 @@ typedef struct
             size_t oldSize = buf->capacity * sizeof(type);                       \
             buf->capacity = ceilToPowerOf2(newCounts);                           \
             size_t newSize = buf->capacity * sizeof(type);                       \
-            ASSERT(newSize > oldSize, "faint...memory allocate!");               \
+                         \
             buf->datas = (type *)memManager(vm, buf->datas, oldSize, newSize);   \
         }                                                                        \
         uint32_t cnt = 0;                                                        \

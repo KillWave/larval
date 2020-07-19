@@ -3,7 +3,6 @@
 //返回value按照utf8编码后的字节数
 uint32_t getByteNumOfEncodeUtf8(int value)
 {
-    ASSERT(value > 0, "Can`t encode negative value!");
 
     // 单个ascii字符需要1字节
     if (value <= 0x7f)
@@ -35,7 +34,6 @@ uint32_t getByteNumOfEncodeUtf8(int value)
 //把value编码为utf8后写入缓冲区buf,返回写入的字节数
 uint8_t encodeUtf8(uint8_t *buf, int value)
 {
-    ASSERT(value > 0, "Can`t encode negative value!");
 
     //按照大端字节序写入缓冲区
     if (value <= 0x7f)
