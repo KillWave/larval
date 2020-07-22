@@ -17,22 +17,22 @@ static void runFile(const char *path)
     }
 
     const char *sourceCode = readFile(path);
+    executeModule(OBJ_TO_VALUE(newObjString(path, strlen(path))), sourceCode);
+    //     struct parser parser;
+    //     initParser(&parser, path, sourceCode,NULL);
 
-    struct parser parser;
-    initParser(&parser, path, sourceCode,NULL);
-
-#include "../parser/token.list"
-    while (parser.curToken.type != TOKEN_EOF)
-    {
-        getNextToken(&parser);
-        printf("%dL: %s [", parser.curToken.lineNo, tokenArray[parser.curToken.type]);
-        uint32_t idx = 0;
-        while (idx < parser.curToken.length)
-        {
-            printf("%c", *(parser.curToken.start + idx++));
-        }
-        printf("]\n");
-    }
+    // #include "../parser/token.list"
+    //     while (parser.curToken.type != TOKEN_EOF)
+    //     {
+    //         getNextToken(&parser);
+    //         printf("%dL: %s [", parser.curToken.lineNo, tokenArray[parser.curToken.type]);
+    //         uint32_t idx = 0;
+    //         while (idx < parser.curToken.length)
+    //         {
+    //             printf("%c", *(parser.curToken.start + idx++));
+    //         }
+    //         printf("]\n");
+    //     }
 }
 
 int main(int argc, const char **argv)

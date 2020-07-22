@@ -5,12 +5,13 @@
 #include "obj_string.h"
 #include "obj_fn.h"
 
-typedef enum {
-   MT_NONE,     //空方法类型,并不等同于undefined
-   MT_PRIMITIVE,    //在vm中用c实现的原生方法
-   MT_SCRIPT,	//脚本中定义的方法
-   MT_FN_CALL,  //有关函数对象的调用方法,用来实现函数重载
-} MethodType;   //方法类型
+typedef enum
+{
+   MT_NONE,      //空方法类型,并不等同于undefined
+   MT_PRIMITIVE, //在vm中用c实现的原生方法
+   MT_SCRIPT,    //脚本中定义的方法
+   MT_FN_CALL,   //有关函数对象的调用方法,用来实现函数重载
+} MethodType;    //方法类型
 
 #define VT_TO_VALUE(vt) \
    ((Value){vt, {0}})
@@ -21,18 +22,18 @@ typedef enum {
 #define NUM_TO_VALUE(num) ((Value){VT_NUM, {num}})
 #define VALUE_TO_NUM(value) value.num
 
-#define OBJ_TO_VALUE(objPtr) ({ \
-   Value value; \
-   value.type = VT_OBJ; \
-   value.objHeader = (ObjHeader*)(objPtr); \
-   value; \
+#define OBJ_TO_VALUE(objPtr) ({             \
+   Value value;                             \
+   value.type = VT_OBJ;                     \
+   value.objHeader = (ObjHeader *)(objPtr); \
+   value;                                   \
 })
 
 #define VALUE_TO_OBJ(value) (value.objHeader)
-#define VALUE_TO_OBJSTR(value) ((ObjString*)VALUE_TO_OBJ(value))
-#define VALUE_TO_OBJFN(value) ((ObjFn*)VALUE_TO_OBJ(value))
-#define VALUE_TO_OBJCLOSURE(value) ((ObjClosure*)VALUE_TO_OBJ(value))
-#define VALUE_TO_CLASS(value) ((Class*)VALUE_TO_OBJ(value))
+#define VALUE_TO_OBJSTR(value) ((ObjString *)VALUE_TO_OBJ(value))
+#define VALUE_TO_OBJFN(value) ((ObjFn *)VALUE_TO_OBJ(value))
+#define VALUE_TO_OBJCLOSURE(value) ((ObjClosure *)VALUE_TO_OBJ(value))
+#define VALUE_TO_CLASS(value) ((Class *)VALUE_TO_OBJ(value))
 
 #define VALUE_IS_UNDEFINED(value) ((value).type == VT_UNDEFINED)
 #define VALUE_IS_NULL(value) ((value).type == VT_NULL)
@@ -49,53 +50,38 @@ typedef enum {
 #define VALUE_IS_0(value) (VALUE_IS_NUM(value) && (value).num == 0)
 
 //原生方法指针
-typedef bool (*Primitive)(Value* args);
+typedef bool (*Primitive)(Value *args);
 
-typedef struct {
-   MethodType type;  //union中的值由type的值决定
-   union {      
+typedef struct
+{
+   MethodType type; //union中的值由type的值决定
+   union {
       //指向脚本方法所关联的c实现
       Primitive primFn;
 
       //指向脚本代码编译后的ObjClosure或ObjFn
-      ObjClosure* obj;
+      ObjClosure *obj;
    };
 } Method;
 
 DECLARE_BUFFER_TYPE(Method)
 
 //类是对象的模板
-typedef struct class {
+typedef struct class
+{
    ObjHeader objHeader;
-   struct class* superClass; //父类
-   uint32_t fieldNum;	   //本类的字段数,包括基类的字段数
-   MethodBuffer methods;   //本类的方法
-   ObjString* name;   //类名
-}Class;  //对象类
+   struct class *superClass; //父类
+   uint32_t fieldNum;        //本类的字段数,包括基类的字段数
+   MethodBuffer methods;     //本类的方法
+   ObjString *name;          //类名
+} Class;                     //对象类
 
 typedef union {
    uint64_t bits64;
    uint32_t bits32[2];
    double num;
 } Bits64;
-// //创建类class的实例
-// ObjInstance *newObjInstance(Class *class)
-// {
-//     //参数class主要作用是提供类中field的数目
-//     ObjInstance *objInstance = ALLOCATE_EXTRA(
-//         ObjInstance, sizeof(Value) * class->fieldNum);
 
-//     //在此关联对象的类为参数class
-//     initObjHeader(&objInstance->objHeader, OT_INSTANCE);
-
-//     //初始化field为NULL
-//     uint32_t idx = 0;
-//     while (idx < class->fieldNum)
-//     {
-//         objInstance->fields[idx++] = VT_TO_VALUE(VT_NULL);
-//     }
-//     return objInstance;
-// }
-#define CAPACITY_GROW_FACTOR 4 
+#define CAPACITY_GROW_FACTOR 4
 #define MIN_CAPACITY 64
 #endif

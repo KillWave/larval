@@ -66,7 +66,6 @@ typedef struct
         uint32_t newCounts = buf->count + fillCount;              \
         if (newCounts > buf->capacity)                            \
         {                                                         \
-            size_t oldSize = buf->capacity * sizeof(type);        \
             buf->capacity = ceilToPowerOf2(newCounts);            \
             size_t newSize = buf->capacity * sizeof(type);        \
             buf->datas = (type *)memManager(buf->datas, newSize); \
@@ -86,7 +85,6 @@ typedef struct
                                                                   \
     void type##BufferClear(type##Buffer *buf)                     \
     {                                                             \
-        size_t oldSize = buf->capacity * sizeof(buf->datas[0]);   \
         memManager(buf->datas, 0);                                \
         type##BufferInit(buf);                                    \
     }
