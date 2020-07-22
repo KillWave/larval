@@ -65,9 +65,9 @@ typedef struct {
 DECLARE_BUFFER_TYPE(Method)
 
 //类是对象的模板
-typedef struct {
+typedef struct class {
    ObjHeader objHeader;
-   Class* superClass; //父类
+   struct class* superClass; //父类
    uint32_t fieldNum;	   //本类的字段数,包括基类的字段数
    MethodBuffer methods;   //本类的方法
    ObjString* name;   //类名
@@ -78,7 +78,24 @@ typedef union {
    uint32_t bits32[2];
    double num;
 } Bits64;
+// //创建类class的实例
+// ObjInstance *newObjInstance(Class *class)
+// {
+//     //参数class主要作用是提供类中field的数目
+//     ObjInstance *objInstance = ALLOCATE_EXTRA(
+//         ObjInstance, sizeof(Value) * class->fieldNum);
 
+//     //在此关联对象的类为参数class
+//     initObjHeader(&objInstance->objHeader, OT_INSTANCE);
+
+//     //初始化field为NULL
+//     uint32_t idx = 0;
+//     while (idx < class->fieldNum)
+//     {
+//         objInstance->fields[idx++] = VT_TO_VALUE(VT_NULL);
+//     }
+//     return objInstance;
+// }
 #define CAPACITY_GROW_FACTOR 4 
 #define MIN_CAPACITY 64
 #endif

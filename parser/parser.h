@@ -1,8 +1,10 @@
 #ifndef _PARSER_PARSER_H
 #define _PARSER_PARSER_H
 #include "../utils/utils.h"
+#include "../object/class.h"
 #include <string.h>
 #include <ctype.h>
+
 typedef enum
 {
     TOKEN_UNKNOWN,
@@ -88,6 +90,7 @@ typedef struct
     const char *start;
     uint32_t length;
     uint32_t lineNo;
+    Value value;
 } Token;
 
 typedef struct parser
@@ -98,12 +101,13 @@ typedef struct parser
     char curChar;
     Token curToken;
     Token preToken;
+    ObjModule *curModule; //当前正在编译的模块
 
     //处于内嵌表达式之中时,期望的右括号数量.
     //用于跟踪小括号对儿的嵌套
     int interpolationExpectRightParenNum;
     struct parser *parent; //指向父parser
-}Parser;
+} Parser;
 
 #define PEEK_TOKEN(parserPtr) parserPtr->curToken.type
 
@@ -114,5 +118,5 @@ void consumeCurToken(Parser *parser, TokenType expected, const char *errMsg);
 void consumeNextToken(Parser *parser, TokenType expected, const char *errMsg);
 uint32_t getByteNumOfEncodeUtf8(int value);
 uint8_t encodeUtf8(uint8_t *buf, int value);
-void initParser(Parser *parser, const char *file, const char *sourceCode);
+void initParser(Parser *parser, const char *file, const char *sourceCode,ObjModule* objModule);
 #endif

@@ -1,1 +1,1 @@
-gcc ./cli/cli.c ./core/core.c ./parser/parser.c ./utf8/unicodeUtf8.c ./utils/utils.c -o lang.exe
+gcc ./cli/cli.c ./core/core.c ./parser/parser.c ./utf8/unicodeUtf8.c ./utils/utils.c ./object/header_obj.c ./object/meta_obj.c ./object/obj_fn.c ./object/obj_string.c -o lang.exe

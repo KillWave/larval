@@ -102,6 +102,58 @@ static void parseId(Parser *parser, TokenType type)
     parser->curToken.length = length;
 }
 
+//解析十六进制数字
+static void parseHexNum(Parser* parser) {
+   while (isxdigit(parser->curChar)) {
+      getNextChar(parser);
+   }
+}
+
+//解析十进制数字
+static void parseDecNum(Parser* parser) {
+   while (isdigit(parser->curChar)) {
+      getNextChar(parser);
+   }
+
+   //若有小数点
+   if (parser->curChar == '.' && isdigit(lookAheadChar(parser))) {
+      getNextChar(parser);
+      while (isdigit(parser->curChar)) { //解析小数点之后的数字
+	 getNextChar(parser);
+      }
+   }
+}
+
+//解析八进制
+static void parseOctNum(Parser* parser) {
+   while(parser->curChar >= '0' && parser->curChar < '8') {
+      getNextChar(parser);
+   } 
+}
+
+//解析八进制 十进制 十六进制 仅支持前缀形式,后缀形式不支持
+static void parseNum(Parser* parser) {
+   //十六进制的0x前缀
+   if (parser->curChar == '0' && matchNextChar(parser, 'x')) {
+      getNextChar(parser);  //跳过'x'
+      parseHexNum(parser);   //解析十六进制数字
+      parser->curToken.value = 
+	 NUM_TO_VALUE(strtol(parser->curToken.start, NULL, 16));
+   } else if (parser->curChar == '0' 
+	 && isdigit(lookAheadChar(parser))) {  // 八进制
+      parseOctNum(parser);
+      parser->curToken.value = 
+	 NUM_TO_VALUE(strtol(parser->curToken.start, NULL, 8));
+   } else {	  //解析十进制
+      parseDecNum(parser);
+      parser->curToken.value = NUM_TO_VALUE(strtod(parser->curToken.start, NULL));
+   }
+   //nextCharPtr会指向第1个不合法字符的下一个字符,因此-1
+   parser->curToken.length = 
+      (uint32_t)(parser->nextCharPtr - parser->curToken.start - 1);
+   parser->curToken.type = TOKEN_NUM;
+}
+
 //解析unicode码点
 static void parseUnicodeCodePoint(Parser *parser, ByteBuffer *buf)
 {
@@ -147,86 +199,79 @@ static void parseUnicodeCodePoint(Parser *parser, ByteBuffer *buf)
 }
 
 //解析字符串
-static void parseString(Parser *parser)
-{
-    ByteBuffer str;
-    ByteBufferInit(&str);
-    while (true)
-    {
-        getNextChar(parser);
+static void parseString(Parser* parser) {
+   ByteBuffer str;
+   ByteBufferInit(&str);
+   while (true) {
+      getNextChar(parser);
 
-        if (parser->curChar == '\0')
-        {
-            LEX_ERROR(parser, "unterminated string!");
-        }
+      if (parser->curChar == '\0') {
+	 LEX_ERROR(parser, "unterminated string!");
+      }
 
-        if (parser->curChar == '"')
-        {
-            parser->curToken.type = TOKEN_STRING;
-            break;
-        }
+      if (parser->curChar == '"') {
+	 parser->curToken.type = TOKEN_STRING;
+	 break;
+      }
 
-        if (parser->curChar == '%')
-        {
-            if (!matchNextChar(parser, '('))
-            {
-                LEX_ERROR(parser, "'%' should followed by '('!");
-            }
-            if (parser->interpolationExpectRightParenNum > 0)
-            {
-                COMPILE_ERROR(parser, "sorry, I don`t support nest interpolate expression!");
-            }
-            parser->interpolationExpectRightParenNum = 1;
-            parser->curToken.type = TOKEN_INTERPOLATION;
-            break;
-        }
+      if (parser->curChar == '%') {
+	 if (!matchNextChar(parser, '(')) {
+	    LEX_ERROR(parser, "'%' should followed by '('!");
+	 }
+	 if (parser->interpolationExpectRightParenNum > 0) {
+	    COMPILE_ERROR(parser, "sorry, I don`t support nest interpolate expression!");
+	 }
+	 parser->interpolationExpectRightParenNum = 1;
+	 parser->curToken.type = TOKEN_INTERPOLATION;
+	 break;
+      }
 
-        if (parser->curChar == '\\')
-        { //处理转义字符
-            getNextChar(parser);
-            switch (parser->curChar)
-            {
-            case '0':
-                ByteBufferAdd(&str, '\0');
-                break;
-            case 'a':
-                ByteBufferAdd(&str, '\a');
-                break;
-            case 'b':
-                ByteBufferAdd(&str, '\b');
-                break;
+      if (parser->curChar == '\\') {   //处理转义字符
+	 getNextChar(parser);
+         switch (parser->curChar) {
+            case '0': 
+               ByteBufferAdd( &str, '\0'); 
+               break;
+            case 'a': 
+               ByteBufferAdd( &str, '\a'); 
+               break;
+            case 'b': 
+               ByteBufferAdd( &str, '\b');
+               break;
             case 'f':
-                ByteBufferAdd(&str, '\f');
-                break;
-            case 'n':
-                ByteBufferAdd(&str, '\n');
-                break;
-            case 'r':
-                ByteBufferAdd(&str, '\r');
-                break;
-            case 't':
-                ByteBufferAdd(&str, '\t');
-                break;
-            case 'u':
-                parseUnicodeCodePoint(parser, &str);
-                break;
-            case '"':
-                ByteBufferAdd(&str, '"');
-                break;
-            case '\\':
-                ByteBufferAdd(&str, '\\');
-                break;
+               ByteBufferAdd( &str, '\f'); 
+               break;
+            case 'n': 
+               ByteBufferAdd( &str, '\n'); 
+               break;
+            case 'r': 
+               ByteBufferAdd( &str, '\r'); 
+               break;
+            case 't': 
+               ByteBufferAdd( &str, '\t'); 
+               break;
+            case 'u': 
+               parseUnicodeCodePoint(parser, &str); 
+               break;
+            case '"': 
+               ByteBufferAdd( &str, '"'); 
+               break;
+            case '\\': 
+               ByteBufferAdd( &str, '\\'); 
+               break;
             default:
-                LEX_ERROR(parser, "unsupport escape \\%c", parser->curChar);
-                break;
-            }
-        }
-        else
-        { //普通字符
-            ByteBufferAdd(&str, parser->curChar);
-        }
-    }
-    ByteBufferClear(&str);
+	       LEX_ERROR(parser, "unsupport escape \\%c", parser->curChar);
+               break;
+         }
+      } else {   //普通字符
+	 ByteBufferAdd( &str, parser->curChar); 
+      }
+   }
+
+   //用识别到的字符串新建字符串对象存储到curToken的value中
+   ObjString* objString = newObjString( (const char*)str.datas, str.count);
+   parser->curToken.value = OBJ_TO_VALUE(objString);
+   ByteBufferClear( &str);
 }
 
 // 跳过一行
@@ -281,199 +326,162 @@ static void skipComment(Parser *parser)
 }
 
 //获得下一个token
-void getNextToken(Parser *parser)
-{
-    parser->preToken = parser->curToken;
-    skipBlanks(parser); // 跳过待识别单词之前的空格
-    parser->curToken.type = TOKEN_EOF;
-    parser->curToken.length = 0;
-    parser->curToken.start = parser->nextCharPtr - 1;
-    while (parser->curChar != '\0')
-    {
-        switch (parser->curChar)
-        {
-        case ',':
-            parser->curToken.type = TOKEN_COMMA;
-            break;
-        case ':':
-            parser->curToken.type = TOKEN_COLON;
-            break;
-        case '(':
-            if (parser->interpolationExpectRightParenNum > 0)
-            {
-                parser->interpolationExpectRightParenNum++;
-            }
-            parser->curToken.type = TOKEN_LEFT_PAREN;
-            break;
-        case ')':
-            if (parser->interpolationExpectRightParenNum > 0)
-            {
-                parser->interpolationExpectRightParenNum--;
-                if (parser->interpolationExpectRightParenNum == 0)
-                {
-                    parseString(parser);
-                    break;
-                }
-            }
-            parser->curToken.type = TOKEN_RIGHT_PAREN;
-            break;
-        case '[':
-            parser->curToken.type = TOKEN_LEFT_BRACKET;
-            break;
-        case ']':
-            parser->curToken.type = TOKEN_RIGHT_BRACKET;
-            break;
-        case '{':
-            parser->curToken.type = TOKEN_LEFT_BRACE;
-            break;
-        case '}':
-            parser->curToken.type = TOKEN_RIGHT_BRACE;
-            break;
-        case '.':
-            if (matchNextChar(parser, '.'))
-            {
-                parser->curToken.type = TOKEN_DOT_DOT;
-            }
-            else
-            {
-                parser->curToken.type = TOKEN_DOT;
-            }
-            break;
-        case '=':
-            if (matchNextChar(parser, '='))
-            {
-                parser->curToken.type = TOKEN_EQUAL;
-            }
-            else
-            {
-                parser->curToken.type = TOKEN_ASSIGN;
-            }
-            break;
-        case '+':
-            parser->curToken.type = TOKEN_ADD;
-            break;
-        case '-':
-            parser->curToken.type = TOKEN_SUB;
-            break;
-        case '*':
-            parser->curToken.type = TOKEN_MUL;
-            break;
-        case '/':
-            //跳过注释'//'或'/*'
-            if (matchNextChar(parser, '/') || matchNextChar(parser, '*'))
-            {
-                skipComment(parser);
+void getNextToken(Parser* parser) {
+   parser->preToken = parser->curToken;
+   skipBlanks(parser);  // 跳过待识别单词之前的空格
+   parser->curToken.type = TOKEN_EOF;
+   parser->curToken.length = 0;
+   parser->curToken.start = parser->nextCharPtr - 1;
+   parser->curToken.value = VT_TO_VALUE(VT_UNDEFINED);
+   while (parser->curChar != '\0') { 
+      switch (parser->curChar) {
+	 case ',':
+	    parser->curToken.type = TOKEN_COMMA;
+	    break;
+	 case ':':
+	    parser->curToken.type = TOKEN_COLON;
+	    break;
+	 case '(':
+	    if (parser->interpolationExpectRightParenNum > 0) {
+	       parser->interpolationExpectRightParenNum++;
+	    }
+	    parser->curToken.type = TOKEN_LEFT_PAREN;
+	    break;
+	 case ')':
+	    if (parser->interpolationExpectRightParenNum > 0) {
+	       parser->interpolationExpectRightParenNum--;
+	       if (parser->interpolationExpectRightParenNum == 0) {
+		  parseString(parser);
+		  break;
+	       }
+	    }
+	    parser->curToken.type = TOKEN_RIGHT_PAREN;
+	    break;
+	 case '[':
+	    parser->curToken.type = TOKEN_LEFT_BRACKET;
+	    break;
+	 case ']':
+	    parser->curToken.type = TOKEN_RIGHT_BRACKET;
+	    break;
+	 case '{':
+	    parser->curToken.type = TOKEN_LEFT_BRACE;
+	    break;
+	 case '}':
+	    parser->curToken.type = TOKEN_RIGHT_BRACE;
+	    break;
+	 case '.':
+	    if (matchNextChar(parser, '.')) {
+	       parser->curToken.type = TOKEN_DOT_DOT;
+	    } else {
+	       parser->curToken.type = TOKEN_DOT;
+	    }
+	    break;
+	 case '=':
+	    if (matchNextChar(parser, '=')) {
+	       parser->curToken.type = TOKEN_EQUAL;
+	    } else {
+	       parser->curToken.type = TOKEN_ASSIGN;
+	    }
+	    break;
+	 case '+':
+	    parser->curToken.type = TOKEN_ADD;
+	    break;
+	 case '-':
+	    parser->curToken.type = TOKEN_SUB;
+	    break;
+	 case '*':
+	    parser->curToken.type = TOKEN_MUL;
+	    break;
+	 case '/':
+	    //跳过注释'//'或'/*'
+	    if (matchNextChar(parser, '/') || matchNextChar(parser, '*')) {   //跳过注释'//'或'/*'
+	       skipComment(parser);
 
-                //重置下一个token起始地址
-                parser->curToken.start = parser->nextCharPtr - 1;
+	       //重置下一个token起始地址
+	       parser->curToken.start = parser->nextCharPtr - 1;
+	       continue;
+	    } else {		 // '/'
+	       parser->curToken.type = TOKEN_DIV;
+	    }
+	    break;
+	 case '%':
+	    parser->curToken.type = TOKEN_MOD;
+	    break;
+	 case '&':
+	    if (matchNextChar(parser, '&')) {
+	       parser->curToken.type = TOKEN_LOGIC_AND;
+	    } else {
+	       parser->curToken.type = TOKEN_BIT_AND;
+	    }
+	    break;
+	 case '|':
+	    if (matchNextChar(parser, '|')) {
+	       parser->curToken.type = TOKEN_LOGIC_OR;
+	    } else {
+	       parser->curToken.type = TOKEN_BIT_OR;
+	    }
+	    break;
+	 case '~':
+	    parser->curToken.type = TOKEN_BIT_NOT;
+	    break;
+	 case '?':
+	    parser->curToken.type = TOKEN_QUESTION;
+	    break;
+	 case '>':
+	    if (matchNextChar(parser, '=')) {
+	       parser->curToken.type = TOKEN_GREATE_EQUAL;
+	    } else if (matchNextChar(parser, '>')) {
+	       parser->curToken.type = TOKEN_BIT_SHIFT_RIGHT;
+	    } else {
+	       parser->curToken.type = TOKEN_GREATE;
+	    }
+	    break;
+	 case '<':
+	    if (matchNextChar(parser, '=')) {
+	       parser->curToken.type = TOKEN_LESS_EQUAL;
+	    } else if (matchNextChar(parser, '<')) {
+	       parser->curToken.type = TOKEN_BIT_SHIFT_LEFT;
+	    } else {
+	       parser->curToken.type = TOKEN_LESS;
+	    }
+	    break;
+	 case '!':
+	    if (matchNextChar(parser, '=')) {
+	       parser->curToken.type = TOKEN_NOT_EQUAL;
+	    } else {
+	       parser->curToken.type = TOKEN_LOGIC_NOT;
+	    }
+	    break;
 
-                continue;
-            }
-            else
-            { // '/'
-                parser->curToken.type = TOKEN_DIV;
-            }
-            break;
-        case '%':
-            parser->curToken.type = TOKEN_MOD;
-            break;
-        case '&':
-            if (matchNextChar(parser, '&'))
-            {
-                parser->curToken.type = TOKEN_LOGIC_AND;
-            }
-            else
-            {
-                parser->curToken.type = TOKEN_BIT_AND;
-            }
-            break;
-        case '|':
-            if (matchNextChar(parser, '|'))
-            {
-                parser->curToken.type = TOKEN_LOGIC_OR;
-            }
-            else
-            {
-                parser->curToken.type = TOKEN_BIT_OR;
-            }
-            break;
-        case '~':
-            parser->curToken.type = TOKEN_BIT_NOT;
-            break;
-        case '?':
-            parser->curToken.type = TOKEN_QUESTION;
-            break;
-        case '>':
-            if (matchNextChar(parser, '='))
-            {
-                parser->curToken.type = TOKEN_GREATE_EQUAL;
-            }
-            else if (matchNextChar(parser, '>'))
-            {
-                parser->curToken.type = TOKEN_BIT_SHIFT_RIGHT;
-            }
-            else
-            {
-                parser->curToken.type = TOKEN_GREATE;
-            }
-            break;
-        case '<':
-            if (matchNextChar(parser, '='))
-            {
-                parser->curToken.type = TOKEN_LESS_EQUAL;
-            }
-            else if (matchNextChar(parser, '<'))
-            {
-                parser->curToken.type = TOKEN_BIT_SHIFT_LEFT;
-            }
-            else
-            {
-                parser->curToken.type = TOKEN_LESS;
-            }
-            break;
-        case '!':
-            if (matchNextChar(parser, '='))
-            {
-                parser->curToken.type = TOKEN_NOT_EQUAL;
-            }
-            else
-            {
-                parser->curToken.type = TOKEN_LOGIC_NOT;
-            }
-            break;
+	 case '"':
+	    parseString(parser);
+	    break;
 
-        case '"':
-            parseString(parser);
-            break;
+	 default:    
+	    //处理变量名及数字
+	    //进入此分支的字符肯定是数字或变量名的首字符
+	    //后面会调用相应函数把其余字符一并解析
 
-        default:
-            //处理变量名及数字
-            //进入此分支的字符肯定是数字或变量名的首字符
-            //后面会调用相应函数把其余字符一并解析
-            //不过识别数字需要一些依赖,目前暂时去掉
-
-            //首字符是字母或'_'则是变量名
-            if (isalpha(parser->curChar) || parser->curChar == '_')
-            {
-                parseId(parser, TOKEN_UNKNOWN); //解析变量名其余的部分
-            }
-            else
-            {
-                if (parser->curChar == '#' && matchNextChar(parser, '!'))
-                {
-                    skipAline(parser);
-                    parser->curToken.start = parser->nextCharPtr - 1; //重置下一个token起始地址
-                    continue;
-                }
-                LEX_ERROR(parser, "unsupport char: \'%c\', quit.", parser->curChar);
-            }
-            return;
-        }
-        //大部分case的出口
-        parser->curToken.length = (uint32_t)(parser->nextCharPtr - parser->curToken.start);
-        getNextChar(parser);
-        return;
-    }
+	    //首字符是字母或'_'则是变量名
+	    if (isalpha(parser->curChar) || parser->curChar == '_') {
+	       parseId(parser, TOKEN_UNKNOWN);  //解析变量名其余的部分
+	    } else if (isdigit(parser->curChar)) { //数字
+	       parseNum(parser);
+	    } else {
+	       if (parser->curChar == '#' && matchNextChar(parser, '!')) {
+		  skipAline(parser);
+		  parser->curToken.start = parser->nextCharPtr - 1;  //重置下一个token起始地址
+		  continue;
+	       } 
+	       LEX_ERROR(parser, "unsupport char: \'%c\', quit.", parser->curChar);
+	    }
+	    return;
+      }
+      //大部分case的出口
+      parser->curToken.length = (uint32_t)(parser->nextCharPtr - parser->curToken.start);
+      getNextChar(parser);
+      return;
+   }
 }
 
 //若当前token为expected则读入下一个token并返回true,
@@ -510,7 +518,7 @@ void consumeNextToken(Parser *parser, TokenType expected, const char *errMsg)
 
 //由于sourceCode未必来自于文件file,有可能只是个字符串,
 //file仅用作跟踪待编译的代码的标识,方便报错
-void initParser(Parser *parser, const char *file, const char *sourceCode)
+void initParser(Parser *parser, const char *file, const char *sourceCode,ObjModule* objModule)
 {
     parser->file = file;
     parser->sourceCode = sourceCode;
@@ -522,4 +530,5 @@ void initParser(Parser *parser, const char *file, const char *sourceCode)
     parser->curToken.length = 0;
     parser->preToken = parser->curToken;
     parser->interpolationExpectRightParenNum = 0;
+     parser->curModule = objModule;
 }

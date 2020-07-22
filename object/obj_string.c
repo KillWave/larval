@@ -1,5 +1,4 @@
 #include "obj_string.h"
-
 //fnv-1a算法
 uint32_t hashString(char *str, uint32_t length)
 {
