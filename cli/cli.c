@@ -1,7 +1,8 @@
-#include <string.h>
 #include "cli.h"
-#include "../include/parser.h"
-#include "../include/core.h"
+
+#include "../parser/parser.h"
+
+#include "../core/core.h"
 
 //执行脚本文件
 static void runFile(const char *path)
@@ -15,13 +16,12 @@ static void runFile(const char *path)
         rootDir = root;
     }
 
-    VM *vm = newVM();
     const char *sourceCode = readFile(path);
 
     struct parser parser;
-    initParser(vm, &parser, path, sourceCode);
+    initParser(&parser, path, sourceCode);
 
-    #include "../include/token.list"
+#include "../parser/token.list"
     while (parser.curToken.type != TOKEN_EOF)
     {
         getNextToken(&parser);

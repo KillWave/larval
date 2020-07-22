@@ -1,1 +1,1 @@
-gcc ./cli/cli.c ./realization/core.c ./realization/parser.c ./realization/unicodeUtf8.c ./realization/utils.c ./realization/vm.c -o lang.exe
+gcc ./cli/cli.c ./core/core.c ./parser/parser.c ./utf8/unicodeUtf8.c ./utils/utils.c -o lang.exe

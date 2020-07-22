@@ -1,5 +1,5 @@
 import people for People 
-function fn() {
+fun fn() {
    var p = People.new("xiaoming", "male")
    p.sayHi()
 }
