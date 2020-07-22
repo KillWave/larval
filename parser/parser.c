@@ -115,7 +115,8 @@ static void parseUnicodeCodePoint(Parser *parser, ByteBuffer *buf)
         getNextChar(parser);
         if (parser->curChar == '\0')
         {
-            LEX_ERROR(parser, "unterminated unicode!");
+            LexError error = {parser->file,parser->preToken.lineNo};
+            LEX_ERROR(&error, "unterminated unicode!");
         }
         if (parser->curChar >= '0' && parser->curChar <= '9')
         {

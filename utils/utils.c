@@ -58,8 +58,8 @@ void errorReport(void* parser,
 	 break;
       case ERROR_LEX:
       case ERROR_COMPILE:
-	//  fprintf(stderr, "%s:%d \"%s\"\n", ((Parser*)parser)->file,
-	//        ((Parser*)parser)->preToken.lineNo, buffer);
+	 fprintf(stderr, "%s:%d \"%s\"\n", ((LexError*)parser)->file,
+	       ((LexError*)parser)->lineNo, buffer);
 	 break;
       case ERROR_RUNTIME:
 	    fprintf(stderr, "%s\n", buffer);

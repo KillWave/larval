@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 // typedef struct parser Parser;
-#define UNUSED __attribute__ ((unused))
+#define UNUSED __attribute__((unused))
 #define NOT_REACHED() fprintf(stderr, "NOT_REACHED: %s:%d In function %s()", __FILE__, __LINE__, __func__)
 void *memManager(void *ptr, uint32_t newSize);
 uint32_t ceilToPowerOf2(uint32_t v);
@@ -19,8 +19,11 @@ uint32_t ceilToPowerOf2(uint32_t v);
 //释放数组
 #define DEALLOCATE(ptr) memManager(ptr, 0)
 
-
-
+typedef struct
+{
+    const char *file;
+    uint32_t lineNo;
+} LexError;
 
 typedef struct
 {
