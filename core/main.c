@@ -27,9 +27,8 @@ int main()
     lamda(void, (void), {
         printf("456\n");
     })();
-
-    Test test;
-    Test *t = Persion(&test);
+       
+    Test *t = new(Test,Persion);
     t->f();
 
   
