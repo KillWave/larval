@@ -16,8 +16,8 @@ class Persion implements Test *this end
     this->f = lamda(void, (void), {
         printf("class Test %d\n", this->a);
     });
-    return this;
 };
+
 int main()
 {
     fn(void, f, (void), {
@@ -31,8 +31,6 @@ int main()
 
     autofree Test *t = new(Test,Persion);
     t->f();
-
-  
 
     try
     {

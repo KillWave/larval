@@ -6,6 +6,6 @@
 #define class void *
 #define implements (
 #define end )
-#define new(type,func) ({type t; func(&t);});
+#define new(type,func) ({type* t; func(t); t;})
 
 #endif
