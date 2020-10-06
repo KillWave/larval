@@ -2,7 +2,21 @@
 #include "include/prelude.h"
 #include "include/Exception.h"
 #include "include/Class.h"
+interface
+{
+    int a;
+    void (*f)(void);
+}
+Test;
 
+class Persion implements Test *this end
+{
+    this->a = 12;
+    this->f = lamda(void, (void), {
+        printf("class Test %d\n", this->a);
+    });
+    return this;
+};
 int main()
 {
     fn(void, f, (void), {
@@ -14,19 +28,11 @@ int main()
         printf("456\n");
     })();
 
-    interface
-    {
-        int a;
-        void (*f)(void);
-    }
-    Test;
+    Test test;
+    Test *t = Persion(&test);
+    t->f();
 
-    Test t = {12, lamda(void, (void), {
-                  printf("test,a:%d\n", t.a);
-              })};
-
-    printf("%d\n", t.a);
-    t.f();
+  
 
     try
     {
