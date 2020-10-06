@@ -2,6 +2,7 @@
 #include "include/prelude.h"
 #include "include/Exception.h"
 #include "include/Class.h"
+
 interface
 {
     int a;
@@ -27,8 +28,8 @@ int main()
     lamda(void, (void), {
         printf("456\n");
     })();
-       
-    Test *t = new(Test,Persion);
+
+    autofree Test *t = new(Test,Persion);
     t->f();
 
   
@@ -39,9 +40,10 @@ int main()
         c = a / b;
         fprintf(stdout, "c = %d\n", c);
     }
-    catch (e)
+    catch (err)
     {
-        throw(null);
+        throw(err);
     };
+
     return 0;
 }

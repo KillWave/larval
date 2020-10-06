@@ -20,12 +20,14 @@
 	if (!__jmp_result) jmp_stack_push(&__jmp_buf); \
   if (!__jmp_result)
 
-#define catch(e) \
+#define catch(err) \
+  global Exception Error; \
+  Exception *err = &Error; \
 	int e = __jmp_result; \
 	if (!e) jmp_stack_pop(); \
 	else
 
-#define throw(msg_) global Exception Error; if(msg_ == NULL){  fprintf(stderr,"error:%s line:%d file:%s date:%s\n",Error.msg,__LINE__,__FILE__,__DATE__);  } else{fprintf(stderr,"error:%s line:%d file:%s date:%s\n",msg_,__LINE__,__FILE__,__DATE__);free(Error.msg); }   
+#define throw(err) fprintf(stderr,"error:%s line:%d file:%s date:%s\n",err->msg,__LINE__,__FILE__,__DATE__);free(err->msg); free(err);    
 #define MAX_JUMP 1024
 typedef jmp_buf* jmp_stack[MAX_JUMP];
 jmp_stack g_js;
