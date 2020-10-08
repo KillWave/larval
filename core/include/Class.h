@@ -9,9 +9,8 @@
 #define implements(type) (type*this,...)
 #define new(type,func,...) ({type* t; func(t,##__VA_ARGS__); t;})
 #define constructor \
-    va_list arguments; \
+    argumentsfree va_list arguments; \
     va_start(arguments,this); \
     if
 #define next(type) va_arg(arguments,type)
-#define destroy va_end
 #endif

@@ -13,26 +13,16 @@ class Persion implements(Test)
     constructor(arguments){
         this->a = next(int);
         this->s = next(string);
-        destroy(arguments);
     }
 };
 
 int main()
 {
     
-    autofree Test *t = new(Test,Persion,12,"hello constructor");
+    Test *t = new(Test,Persion,12,"hello constructor");
     printf("Persion.s:%s\n",t->s);
     printf("Persion.a:%d\n",t->a);
-
-
-
-
-
-
-
-
-
-
+    
     fn(void, f, (void), {
         printf("123\n");
     });
