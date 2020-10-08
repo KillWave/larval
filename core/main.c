@@ -11,10 +11,25 @@ Test;
 
 class Persion implements(Test)
 {
-    this->a = 12;
-    this->f = lamda(void, (void), {
-        printf("class Test %d\n", this->a);
-    });
+    
+    constructor(arguments){
+       
+        
+        printf("%d\n",next(int));
+        printf("%s\n",next(string));
+
+        destroy(arguments);
+    }
+    // printf("args = %d\n",*arguments);
+    // va_arg(arguments,int);
+     
+    // printf("%d\n",*arguments);
+    // va_end(arguments);	
+  
+    // this->a = 12;
+    // this->f = lamda(void, (void), {
+    //     printf("class Test %d\n", this->a);
+    // });
 };
 
 int main()
@@ -28,8 +43,8 @@ int main()
         printf("456\n");
     })();
 
-    autofree Test *t = new(Test,Persion);
-    t->f();
+    autofree Test *t = new(Test,Persion,0,"hello constructor");
+    // t->f();
 
     try
     {
