@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "include/prelude.h"
 #include "include/Exception.h"
 #include "include/Class.h"
 
@@ -10,7 +9,7 @@ interface
 }
 Test;
 
-class Persion implements Test *this end
+class Persion implements(Test)
 {
     this->a = 12;
     this->f = lamda(void, (void), {
