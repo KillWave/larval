@@ -5,12 +5,13 @@
 
 #define fn(return_type, function_name,function_args, function_body)  autofree return_type(*function_name)function_args;  function_name = lamda(return_type,function_args,function_body)
 #define lamda(return_type,function_args, function_body) ({return_type func_name function_args function_body func_name;})
-#define class void
+#define class void*
 #define implements(type) (type*this,...)
-#define new(type,func,...) ({type* t; func(t,##__VA_ARGS__); t;})
+#define new(type,func,...) ({type* t; func(t,##__VA_ARGS__);t;})
 #define constructor \
     argumentsfree va_list arguments; \
     va_start(arguments,this); \
     if
 #define next(type) va_arg(arguments,type)
+#define methods(var,return_type,function_args, function_body) inline return_type func_name##var function_args function_body; this->var = func_name##var;
 #endif
