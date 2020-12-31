@@ -1,0 +1,29 @@
+;函数定义
+(
+  global {function} 
+    (lambda {args body} {
+      global (head args) (lambda (tail args) body)
+    })
+)
+
+;列表函数
+(function {len l} {
+    (if (== l {})
+    {0}
+    {+ 1 (len (tail l))})
+})
+
+(function {reverse l} {
+  (if (== l {})
+    {{}}
+    {join (reverse (tail l)) (head l)})
+})
+
+( global {for} (lambda {args body} {
+    (if ( > (get args 1) (get args 0))
+    {
+      
+        ( body (get args 0)) 
+        ( for (list (+ (get args 0) (get args 2)) (get args 1) (get args 2)) body)
+    })
+}))

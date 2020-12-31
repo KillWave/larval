@@ -1,0 +1,56 @@
+
+;; ;; ;;变量定义与赋值
+;; (global {a b c} 1 2 3)
+;; (print a b c)
+;; ;获取list长度
+;; (print (len {}))
+;; ;翻转list
+;; (print (reverse {1 2 3}))
+;; ;unicode编码
+;; (print ("hello\u4e20\u4e10\n"))
+;; ;10进制
+;; (print 123)
+;; ;16进制
+;; (print 0x123) ;291
+;; ;8进制
+;; (print 0123)  ;83
+;; ;函数声明
+;; (function {add x y} {+ x y})
+
+;; (print (add 10 20))
+
+
+
+;; (global {l} (list 1 2 3 4))
+;; (print l)
+;; ;循环
+;; (for {0 (len l) 1} (lambda {index}{
+;;     (print (get l index))
+;; }))
+;; (global {a} 1)
+;; (function {test c}{
+;;     ( local {d} 10)
+;;     (print a c)
+;;     (+ 4 5)
+;; })
+;; (test 20)
+;; (print (test 20))
+(local {a b c} 1 2 3)
+(function {test & e}{
+
+    (local {d a} 10 20)
+    ;; (global {a} 10)
+    (print e a d)
+})
+(test 100)
+(print a)
+
+
+;; (print (test 1 2 3 4))
+;; (print a d)
+
+
+
+
+
+
